@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Unfollower Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .setup-form {
+            display: none;
+        }
+
+        .setup-form.active {
+            display: block;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .unfollowers-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+
+        .unfollower-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s ease;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #followers-list .unfollower-item {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .unfollower-item:hover {
+            background: #e9ecef;
+        }
+
+        .unfollower-item:last-child {
+            border-bottom: none;
+        }
+
+        .unfollower-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .unfollower-info {
+            flex: 1;
+        }
+
+        .unfollower-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .unfollower-handle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐦 X Unfollower Tracker</h1>
+            <p>Track who unfollowed you on X (Twitter)</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Setup Form -->
+        <div id="setup-form" class="setup-form active">
+            <div class="card">
+                <h2>🔧 Setup Your Account</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Enter your Twitter username and Bearer Token to start tracking unfollowers.
+                </p>
+                
+                <div class="instructions">
+                    <h3>📋 How to get your Bearer Token:</h3>
+                    <ol>
+                        <li>Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">Twitter Developer Portal</a></li>
+                        <li>Create a project and app</li>
+                        <li>Go to "Keys and Tokens" tab</li>
+                        <li>Generate a Bearer Token</li>
+                        <li>Copy the token and paste it below</li>
+                    </ol>
+                </div>
+
+                <form id="setupForm">
+                    <div class="form-group">
+                        <label for="username">Twitter Username (without @):</label>
+                        <input type="text" id="username" name="username" placeholder="your_username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bearerToken">Bearer Token:</label>
+                        <input type="password" id="bearerToken" name="bearerToken" placeholder="Your Bearer Token" required>
+                    </div>
+                    <button type="submit" class="btn" id="setupBtn">
+                        <span id="setupText">Setup Account</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <div class="card">
+                <div class="user-info">
+                    <div>
+                        <h3>Welcome, @<span id="current-username"></span>!</h3>
+                        <p style="color: #666; margin-top: 5px;">Last updated: <span id="last-updated">Never</span></p>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="setupNewAccount()" style="margin-right: 10px;">Setup New Account</button>
+                        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-followers">0</div>
+                        <div class="stat-label">Total Followers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-unfollowers">0</div>
+                        <div class="stat-label">Total Unfollowers</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn" onclick="checkUnfollowers()" id="checkBtn">
+                        <span id="checkText">🔍 Check Unfollowers</span>
+                    </button>
+                </div>
+
+                <h3>👥 All Followers</h3>
+                <div id="followers-list" class="unfollowers-list">
+                    <div class="empty-state">Loading followers...</div>
+                </div>
+
+                <h3>🚫 Unfollowers List</h3>
+                <div id="unfollowers-list" class="unfollowers-list">
+                    <div class="empty-state">No unfollowers detected yet. Click "Check Unfollowers" to start tracking.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Check if user is already logged in on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+        });
+
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showDashboard();
+                        loadStats();
+                        loadFollowers();
+                        loadUnfollowers();
+                    } else {
+                        showSetup();
+                    }
+                } else {
+                    showSetup();
+                }
+            } catch (error) {
+                showSetup();
+            }
+        }
+
+        function showSetup() {
+            document.getElementById('setup-form').classList.add('active');
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        function showDashboard() {
+            document.getElementById('setup-form').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+        }
+
+        // Setup form submission
+        document.getElementById('setupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const setupBtn = document.getElementById('setupBtn');
+            const setupText = document.getElementById('setupText');
+            const username = document.getElementById('username').value.trim();
+            const bearerToken = document.getElementById('bearerToken').value.trim();
+
+            setupBtn.disabled = true;
+            setupText.innerHTML = '<div class="loading"></div> Setting up...';
+
+            try {
+                const response = await fetch('/api/setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, bearerToken })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    document.getElementById('current-username').textContent = username;
+                    showDashboard();
+                    loadStats();
+                    loadFollowers();
+                    loadUnfollowers();
+                } else {
+                    // Check if it's a rate limit error
+                    const isRateLimit = data.error.includes('Rate limit exceeded') || response.status === 429;
+                    showAlert(`❌ Setup failed: ${data.error}`, isRateLimit ? 'info' : 'error');
+                    
+                    if (isRateLimit) {
+                        // Show additional info for rate limits
+                        setTimeout(() => {
+                            showAlert('💡 Tip: Rate limits reset every 15 minutes. You can try again later.', 'info');
+                        }, 3000);
+                    }
+                }
+            } catch (error) {
+                showAlert('❌ Setup failed: Network error', 'error');
+            } finally {
+                setupBtn.disabled = false;
+                setupText.textContent = 'Setup Account';
+            }
+        });
+
+        async function checkUnfollowers() {
+            const checkBtn = document.getElementById('checkBtn');
+            const checkText = document.getElementById('checkText');
+
+            checkBtn.disabled = true;
+            checkText.innerHTML = '<div class="loading"></div> Checking...';
+
+            try {
+                const response = await fetch('/api/check-unfollowers', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    loadStats();
+                    loadFollowers();
+                    loadUnfollowers();
+                } else {
+                    // Check if it's a rate limit error
+                    const isRateLimit = data.error.includes('Rate limit exceeded');
+                    showAlert(`❌ Error: ${data.error}`, isRateLimit ? 'info' : 'error');
+                    
+                    if (isRateLimit) {
+                        // Show additional info for rate limits
+                        setTimeout(() => {
+                            showAlert('💡 Tip: Rate limits reset every 15 minutes. You can try again later.', 'info');
+                        }, 3000);
+                    }
+                }
+            } catch (error) {
+                showAlert('❌ Error: Network error', 'error');
+            } finally {
+                checkBtn.disabled = false;
+                checkText.textContent = '🔍 Check Unfollowers';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total-followers').textContent = data.stats.totalFollowers;
+                    document.getElementById('total-unfollowers').textContent = data.stats.totalUnfollowers;
+                    
+                    const lastUpdated = data.stats.lastUpdated ? 
+                        new Date(data.stats.lastUpdated).toLocaleString() : 'Never';
+                    document.getElementById('last-updated').textContent = lastUpdated;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadFollowers() {
+            try {
+                const response = await fetch('/api/followers');
+                const data = await response.json();
+
+                if (data.success) {
+                    updateFollowersList(data.followers);
+                }
+            } catch (error) {
+                console.error('Error loading followers:', error);
+            }
+        }
+
+        async function loadUnfollowers() {
+            try {
+                const response = await fetch('/api/unfollowers');
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUnfollowersList(data.unfollowers);
+                }
+            } catch (error) {
+                console.error('Error loading unfollowers:', error);
+            }
+        }
+
+        function updateFollowersList(followers) {
+            const container = document.getElementById('followers-list');
+            
+            if (followers.length === 0) {
+                container.innerHTML = '<div class="empty-state">No followers found.</div>';
+                return;
+            }
+
+            container.innerHTML = followers.map(user => `
+                <div class="unfollower-item">
+                    <img src="${user.profile_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlMGUwZTAiLz4KPC9zdmc+'}" 
+                         alt="${user.name}" 
+                         class="unfollower-avatar"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlMGUwZTAiLz4KPC9zdmc+'">
+                    <div class="unfollower-info">
+                        <div class="unfollower-name">${user.name || 'Unknown'}</div>
+                        <div class="unfollower-handle">@${user.username || 'unknown'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateUnfollowersList(unfollowers) {
+            const container = document.getElementById('unfollowers-list');
+            
+            if (unfollowers.length === 0) {
+                container.innerHTML = '<div class="empty-state">No unfollowers detected yet. Click "Check Unfollowers" to start tracking.</div>';
+                return;
+            }
+
+            container.innerHTML = unfollowers.map(user => `
+                <div class="unfollower-item">
+                    <img src="${user.profile_image_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlMGUwZTAiLz4KPC9zdmc+'}" 
+                         alt="${user.name}" 
+                         class="unfollower-avatar"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlMGUwZTAiLz4KPC9zdmc+'">
+                    <div class="unfollower-info">
+                        <div class="unfollower-name">${user.name || 'Unknown'}</div>
+                        <div class="unfollower-handle">@${user.username || 'unknown'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                showAlert('👋 Logged out successfully', 'info');
+                showSetup();
+                document.getElementById('setupForm').reset();
+            } catch (error) {
+                showAlert('❌ Logout failed', 'error');
+            }
+        }
+
+        function setupNewAccount() {
+            if (confirm('Are you sure you want to setup a new account? This will log you out of the current account.')) {
+                logout();
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'error' ? 'alert-error' : 
+                              type === 'success' ? 'alert-success' : 'alert-info';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
