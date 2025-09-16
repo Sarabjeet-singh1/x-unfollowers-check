@@ -99,7 +99,7 @@ export default function Home() {
             style={{
               width: '100%',
               maxWidth: 520,
-              background: 'rgba(0,0,0,0.45)',
+              background: 'rgba(0,0,0,0.45)', unne
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               border: '1px solid rgba(255,255,255,0.12)'
